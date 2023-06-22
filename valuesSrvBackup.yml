@@ -1,0 +1,31 @@
+srv-backup:
+  SYSTEME:
+    IP_INTERNAL: "192.168.0.5"
+    DISK_MOUNTED_FOR_MINIO: "/dev/sd*"
+    
+  RKE2:
+    FQDN: "tes.example.backup"
+    
+  RCLONE:
+    PROD:
+      S3_PROD_ALIAS_NAME: "bucket_box"
+      S3_PROD_PROVIDER: "Ceph"
+      S3_PROD_ACCESS_KEY: ""
+      S3_PROD_SECRET_KEY: ""
+      S3_PROD_ENDPOINT: "IP_PROD_CBOX"
+      S3_PROD_PORT_ENDPOINT: "9000"
+      S3_PROD_ACL: "private"
+    BACKUP:
+      S3_BACK_ALIAS_NAME: "bucket_objet"
+      S3_BACK_PROVIDER: "Minio"
+      S3_BACK_ACCESS_KEY: ""
+      S3_BACK_SECRET_KEY: ""
+      S3_BACK_REGION: "other-v2-signature"
+      S3_BACK_ACL: "bucket-owner-full-control"
+      S3_BACK_ENDPOINT: "IP_INTERNAL"
+      S3_BACK_PORT_ENDPOINT: "9000"
+    SYNC:
+      S3_PROD_ALIAS_NAM: ""
+      S3_PROD_BUCKET_NAME: ""
+      S3_BACK_ALIAS_NAME: ""
+      S3_BACK_BUCKET_NAME_OBJ: ""
