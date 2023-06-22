@@ -3,6 +3,31 @@
 ########################################
 # Le fichier d'install doit être dans le meme repertoire que le valuesSrvBackup.yml
 
+###########
+### VAR ###
+###########
+IP_INTERNAL=$( yq e '.srv-backup.SYSTEM.IP_INTERNAL' ./valuesSrvBackup.yml )
+DISK_MOUNTED_FOR_MINIO=$( yq e '.srv-backup.SYSTEM.DISK_MOUNTED_FOR_MINIO' ./valuesSrvBackup.yml )
+FQDN=$( yq e '.srv-backup.RKE2.FQDN' ./valuesSrvBackup.yml )
+S3_PROD_ALIAS_NAME=$( yq e .srv-backup.RCLONE.PROD.S3_PROD_ALIAS_NAME' ./valuesSrvBackup.yml' )
+S3_PROD_PROVIDER=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_PROVIDER' ./valuesSrvBackup.yml )
+S3_PROD_ACCESS_KEY=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ACCESS_KEY' ./valuesSrvBackup.yml )
+S3_PROD_SECRET_KEY=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_SECRET_KEY' ./valuesSrvBackup.yml )
+S3_PROD_ENDPOINT=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ENDPOINT' ./valuesSrvBackup.yml )
+S3_PROD_PORT_ENDPOINT=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_PORT_ENDPOINT' ./valuesSrvBackup.yml )
+S3_PROD_ACL=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ACL' ./valuesSrvBackup.yml )
+S3_BACK_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ALIAS_NAME' ./valuesSrvBackup.yml )
+S3_BACK_PROVIDER=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_PROVIDER' ./valuesSrvBackup.yml )
+S3_BACK_ACCESS_KEY=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ACCESS_KEY' ./valuesSrvBackup.yml )
+S3_BACK_SECRET_KEY=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_SECRET_KEY' ./valuesSrvBackup.yml )
+S3_BACK_REGION=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_REGION' ./valuesSrvBackup.yml )
+S3_BACK_ACL=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ACL' ./valuesSrvBackup.yml )
+S3_BACK_ENDPOINT=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ENDPOINT' ./valuesSrvBackup.yml )
+S3_BACK_PORT_ENDPOINT=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_PORT_ENDPOINT' ./valuesSrvBackup.yml )
+S3_PROD_ALIAS_NAM=$( yq e '.srv-backup.RCLONE.SYNC.S3_PROD_ALIAS_NAM' ./valuesSrvBackup.yml )
+S3_PROD_BUCKET_NAME=$( yq e '.srv-backup.RCLONE.SYNC.S3_PROD_BUCKET_NAME' ./valuesSrvBackup.yml )
+S3_BACK_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_ALIAS_NAME' ./valuesSrvBackup.yml )
+S3_BACK_BUCKET_NAME_OBJ=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_BUCKET_NAME_OBJ' ./valuesSrvBackup.yml )
 
 ##########################
 ### Install dependance ###
@@ -57,6 +82,11 @@ curl -so /etc/minio/installMinio.yml curl https://raw.githubusercontent.com/cifr
 var=$IP_INTERNAL yq e '.spec.externalIPs[0] = env(var)' -i /etc/minio/installMinio.yml
 var=$IP_INTERNAL yq e '.status.ingress = env(var)' -i /etc/minio/installMinio.yml
 
+
+"""
+uninstall minio
+kubectl delete -n dev-minio
+"""
 # folder de montage
 mkdir -p /mnt/DataStore
 # voir les disk monter
@@ -68,6 +98,24 @@ echo "UUID=$UUID_DISK_MOUNTED /mnt/DataStore    ext4    rw,relatime   0   0" >> 
 
 ### apply the config
 kubectl apply -f /etc/minio/installMinio.yml
+
+
+"""
+### monter les disks pour minio + definir chemin de montage
+df -h
+lsblk --output NAME,SIZE
+
+mount /dev/sbX /mnt/DataStore
+
+# pour monter le disk le faire dans /etc/fstab  et faire fdisk -l pour voir le UID
+### Obtenir UUID des disks 
+lsblk --fs
+
+# delete bucket
+mc rb alias/bucketName
+# delete file to bucket
+mc rm alias/bucketName
+"""
 
 ###Creer 2 buckets BDD et S3(objectStorage)
 mc mb myminio/bdd
@@ -93,6 +141,28 @@ rclone config
 rclone config create $S3_PROD_ALIAS_NAME s3 provider=$S3_PROD_PROVIDER access_key_id=$S3_PROD_ACCESS_KEY secret_access_key=$S3_PROD_SECRET_KEY endpoint=http://$S3_PROD_ENDPOINT:$S3_PROD_PORT_ENDPOINT acl=$S3_PROD_ACL
 rclone config create $S3_BACK_ALIAS_NAME s3 provider=$S3_BACK_PROVIDER access_key_id=$S3_BACK_ACCESS_KEY secret_access_key=$S3_BACK_SECRET_KEY region=$S3_BACK_REGION acl=$S3_BACK_ACL endpoint=http://$S3_BACK_ENDPOINT:$S3_BACK_PORT_ENDPOINT
 
+"""
+cat <<EOF > .config/rclone/rclone.conf
+[$S3_PROD_ALIAS_NAME]
+type = s3
+provider = $S3_PROD_PROVIDER
+access_key_id = $S3_PROD_ACCESS_KEY
+secret_access_key = $S3_PROD_SECRET_KEY
+endpoint = https://$S3_PROD_ENDPOINT
+acl =  # default: private
+
+[$S3_BACK_ALIAS_NAME]
+type = s3
+provider = $S3_BACK_PROVIDER
+access_key_id = $S3_BACK_ACCESS_KEY
+secret_access_key = $S3_BACK_SECRET_KEY
+region = $S3_BACK_REGION # default: other-v2-signature
+acl = $S3_BACK_ACL #default: bucket-owner-full-control
+endpoint = http://$S3_BACK_ENDPOINT:$S3_BACK_PORT_ENDPOINT # default port 9000
+EOF
+"""
 # cmd rclone pour synch
 # rclone sync source:path dest:path [flags]
 rclone sync -P $S3_PROD_ALIAS_NAME:$S3_PROD_BUCKET_NAME $S3_BACK_ALIAS_NAME:$S3_BACK_BUCKET_NAME_OBJ
+
+
