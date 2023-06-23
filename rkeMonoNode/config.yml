@@ -1,0 +1,5 @@
+tls-san:
+  - "rke-singlenode.example.com"
+node-ip: 172.19.130.178
+advertise-address: 172.19.130.178
+node-external-ip: 172.19.139.178
