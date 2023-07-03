@@ -2,6 +2,8 @@ srv-backup:
   SYSTEM:
     IP_INTERNAL: "192.168.0.5"
     DISK_MOUNTED_FOR_MINIO: "/dev/sd*"
+    IP_PROD_CBOX: "192.168.0.4"
+    USER_PROD_CBOX: "ubuntu"
     
   RKE2:
     FQDN: "tes.example.backup"
@@ -29,3 +31,10 @@ srv-backup:
       S3_PROD_BUCKET_NAME: ""
       S3_BACK_ALIAS_NAME: ""
       S3_BACK_BUCKET_NAME_OBJ: ""
+      S3_BACK_BUCKET_BDD: ""
+    K8S:
+      WORKSPACE_PROD_CBOX_BDD: ""
+      POD_NAME_PROD_CBOX_BDD: ""
+    BDD:
+      TABLE_PROD_CBOX: ""
+      USERNAME_PROD_CBOX: ""
