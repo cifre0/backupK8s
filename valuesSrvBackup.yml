@@ -27,7 +27,7 @@ srv-backup:
       S3_BACK_ENDPOINT: "IP_INTERNAL"
       S3_BACK_PORT_ENDPOINT: "9000"
     SYNC:
-      S3_PROD_ALIAS_NAM: ""
+      S3_PROD_ALIAS_NAME: ""
       S3_PROD_BUCKET_NAME: ""
       S3_BACK_ALIAS_NAME: ""
       S3_BACK_BUCKET_NAME_OBJ: ""
