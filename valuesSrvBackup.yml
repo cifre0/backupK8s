@@ -1,7 +1,7 @@
 srv-backup:
   SYSTEM:
     IP_INTERNAL: "192.168.0.5"
-    EXTERNAL_IP: EXTERNAL_IP
+    EXTERNAL_IP: "EXTERNAL_IP"
     DISK_MOUNTED_FOR_MINIO: "/dev/sd*"
     IP_PROD_CBOX: "192.168.0.4"
     USER_PROD_CBOX: "ubuntu"
