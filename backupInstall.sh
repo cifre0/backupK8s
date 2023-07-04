@@ -6,7 +6,7 @@
 ########################################
 """
 # lien de telechargement:
- curl -so ./script_install_backup.sh https://raw.githubusercontent.com/cifre0/backupK8s/main/backupInstall.sh
+# curl -so ./script_install_backup.sh https://raw.githubusercontent.com/cifre0/backupK8s/main/backupInstall.sh
 # Le fichier d'install doit être dans le meme repertoire que le valuesSrvBackup.yml
 """
 
@@ -23,43 +23,43 @@ function recommence (){
 
 function test_command () {
   test=$( if [ -x "$(command -v $1)" ]; then echo true; else echo false; fi )
-  if [ $test = false ]; then echo $1 is installed; return 3; fi
+  if [ $test = true ]; then echo "$1 is installed"; return 3; fi;
 }
 
 
 function maj_values() {
-IP_INTERNAL=$( yq e '.srv-backup.SYSTEM.IP_INTERNAL' ./valuesSrvBackup.yml )
-DISK_MOUNTED_FOR_MINIO=$( yq e '.srv-backup.SYSTEM.DISK_MOUNTED_FOR_MINIO' ./valuesSrvBackup.yml )
-IP_PROD_CBOX=$( yq e '.srv-backup.SYSTEM.IP_PROD_CBOX' ./valuesSrvBackup.yml )
-USER_PROD_CBOX=$( yq e '.srv-backup.SYSTEM.USER_PROD_CBOX' ./valuesSrvBackup.yml )
-FQDN=$( yq e '.srv-backup.RKE2.FQDN' ./valuesSrvBackup.yml )
-S3_PROD_ALIAS_NAME=$( yq e .srv-backup.RCLONE.PROD.S3_PROD_ALIAS_NAME' ./valuesSrvBackup.yml' )
-S3_PROD_PROVIDER=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_PROVIDER' ./valuesSrvBackup.yml )
-S3_PROD_ACCESS_KEY=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ACCESS_KEY' ./valuesSrvBackup.yml )
-S3_PROD_SECRET_KEY=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_SECRET_KEY' ./valuesSrvBackup.yml )
-S3_PROD_ENDPOINT=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ENDPOINT' ./valuesSrvBackup.yml )
-S3_PROD_PORT_ENDPOINT=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_PORT_ENDPOINT' ./valuesSrvBackup.yml )
-S3_PROD_ACL=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ACL' ./valuesSrvBackup.yml )
-S3_BACK_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ALIAS_NAME' ./valuesSrvBackup.yml )
-S3_BACK_PROVIDER=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_PROVIDER' ./valuesSrvBackup.yml )
-S3_BACK_ACCESS_KEY=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ACCESS_KEY' ./valuesSrvBackup.yml )
-S3_BACK_SECRET_KEY=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_SECRET_KEY' ./valuesSrvBackup.yml )
-S3_BACK_REGION=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_REGION' ./valuesSrvBackup.yml )
-S3_BACK_ACL=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ACL' ./valuesSrvBackup.yml )
-S3_BACK_ENDPOINT=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ENDPOINT' ./valuesSrvBackup.yml )
-S3_BACK_PORT_ENDPOINT=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_PORT_ENDPOINT' ./valuesSrvBackup.yml )
-S3_PROD_ALIAS_NAM=$( yq e '.srv-backup.RCLONE.SYNC.S3_PROD_ALIAS_NAM' ./valuesSrvBackup.yml )
-S3_PROD_BUCKET_NAME=$( yq e '.srv-backup.RCLONE.SYNC.S3_PROD_BUCKET_NAME' ./valuesSrvBackup.yml )
-S3_BACK_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_ALIAS_NAME' ./valuesSrvBackup.yml )
-S3_BACK_BUCKET_NAME_OBJ=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_BUCKET_NAME_OBJ' ./valuesSrvBackup.yml )
-S3_BACK_BUCKET_BDD=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_BUCKET_BDD' ./valuesSrvBackup.yml )
-CMD_SSH=$( ssh -o "StrictHostKeyChecking=no" $USER_PROD_CBOX@$IP_PROD_CBOX sudo -i )
-BDD_WORKSPACE_PROD_CBOX=$( yq e '.srv-backup.K8S.WORKSPACE_PROD_CBOX_BDD' ./valuesSrvBackup.yml )
-BDD_POD_NAME_PROD_CBOX=$( yq e '.srv-backup.K8S.POD_NAME_PROD_CBOX_BDD' ./valuesSrvBackup.yml )
-BDD_TABLE_PROD_CBOX=$( yq e '.srv-backup.K8S.BDD.TABLE_PROD_CBOX' ./valuesSrvBackup.yml )
-BDD_USERNAME_PROD_CBOX=$( yq e '.srv-backup.K8S.BDD.USERNAME_PROD_CBOX' ./valuesSrvBackup.yml )
+  if [ ! -f valuesSrvBackup.yml ];then curl -so valuesSrvBackup.yml https://raw.githubusercontent.com/cifre0/backupK8s/main/valuesSrvBackup.yml; fi
+  IP_INTERNAL=$( yq e '.srv-backup.SYSTEM.IP_INTERNAL' ./valuesSrvBackup.yml )
+  DISK_MOUNTED_FOR_MINIO=$( yq e '.srv-backup.SYSTEM.DISK_MOUNTED_FOR_MINIO' ./valuesSrvBackup.yml )
+  IP_PROD_CBOX=$( yq e '.srv-backup.SYSTEM.IP_PROD_CBOX' ./valuesSrvBackup.yml )
+  USER_PROD_CBOX=$( yq e '.srv-backup.SYSTEM.USER_PROD_CBOX' ./valuesSrvBackup.yml )
+  FQDN=$( yq e '.srv-backup.RKE2.FQDN' ./valuesSrvBackup.yml )
+  S3_PROD_ALIAS_NAME=$( yq e .srv-backup.RCLONE.PROD.S3_PROD_ALIAS_NAME' ./valuesSrvBackup.yml' )
+  S3_PROD_PROVIDER=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_PROVIDER' ./valuesSrvBackup.yml )
+  S3_PROD_ACCESS_KEY=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ACCESS_KEY' ./valuesSrvBackup.yml )
+  S3_PROD_SECRET_KEY=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_SECRET_KEY' ./valuesSrvBackup.yml )
+  S3_PROD_ENDPOINT=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ENDPOINT' ./valuesSrvBackup.yml )
+  S3_PROD_PORT_ENDPOINT=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_PORT_ENDPOINT' ./valuesSrvBackup.yml )
+  S3_PROD_ACL=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ACL' ./valuesSrvBackup.yml )
+  S3_BACK_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ALIAS_NAME' ./valuesSrvBackup.yml )
+  S3_BACK_PROVIDER=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_PROVIDER' ./valuesSrvBackup.yml )
+  S3_BACK_ACCESS_KEY=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ACCESS_KEY' ./valuesSrvBackup.yml )
+  S3_BACK_SECRET_KEY=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_SECRET_KEY' ./valuesSrvBackup.yml )
+  S3_BACK_REGION=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_REGION' ./valuesSrvBackup.yml )
+  S3_BACK_ACL=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ACL' ./valuesSrvBackup.yml )
+  S3_BACK_ENDPOINT=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_ENDPOINT' ./valuesSrvBackup.yml )
+  S3_BACK_PORT_ENDPOINT=$( yq e '.srv-backup.RCLONE.BACKUP.S3_BACK_PORT_ENDPOINT' ./valuesSrvBackup.yml )
+  S3_PROD_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.SYNC.S3_PROD_ALIAS_NAME' ./valuesSrvBackup.yml )
+  S3_PROD_BUCKET_NAME=$( yq e '.srv-backup.RCLONE.SYNC.S3_PROD_BUCKET_NAME' ./valuesSrvBackup.yml )
+  S3_BACK_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_ALIAS_NAME' ./valuesSrvBackup.yml )
+  S3_BACK_BUCKET_NAME_OBJ=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_BUCKET_NAME_OBJ' ./valuesSrvBackup.yml )
+  S3_BACK_BUCKET_BDD=$( yq e '.srv-backup.RCLONE.SYNC.S3_BACK_BUCKET_BDD' ./valuesSrvBackup.yml )
+  BDD_WORKSPACE_PROD_CBOX=$( yq e '.srv-backup.K8S.WORKSPACE_PROD_CBOX_BDD' ./valuesSrvBackup.yml )
+  BDD_POD_NAME_PROD_CBOX=$( yq e '.srv-backup.K8S.POD_NAME_PROD_CBOX_BDD' ./valuesSrvBackup.yml )
+  BDD_TABLE_PROD_CBOX=$( yq e '.srv-backup.K8S.BDD.TABLE_PROD_CBOX' ./valuesSrvBackup.yml )
+  BDD_USERNAME_PROD_CBOX=$( yq e '.srv-backup.K8S.BDD.USERNAME_PROD_CBOX' ./valuesSrvBackup.yml )
 
-echo "fin de la mise à jour des variables"
+  echo "fin de la mise à jour des variables"
 }
 
 ###############
@@ -68,10 +68,13 @@ echo "fin de la mise à jour des variables"
 function install_dependance() {
   apt update
   gestion_erreur "update"
-  apt install -y net-tools moreutils parallel jq
-  gestion_erreur "net-tools moreutils parallel jq"
+  apt install -y net-tools moreutils parallel jq wget curl
+  gestion_erreur "net-tools moreutils parallel qq"
   DEBIAN_FRONTEND=noninteractive apt-get install -y sshpass
   gestion_erreur "sshpass"
+  wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+  chmod a+x /usr/local/bin/yq
+  gestion_erreur "yq"
 }
 
 function install_kubectl() {
@@ -79,7 +82,7 @@ function install_kubectl() {
   # install kubectl
   curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
   chmod +x ./kubectl
-  sudo mv ./kubectl /usr/local/bin/kubectl
+  mv ./kubectl /usr/local/bin/kubectl
   kubectl version --client
   ### auto-completion
   source /usr/share/bash-completion/bash_completion
@@ -114,7 +117,7 @@ function install_rke() {
 
   ### verifie que le noeud K8s exist
   kubectl get nodes 
-  if [ $? == 0 ]; then echo "RKE est bien installé"; else tee >> log.txt; exit fi
+  if [ $? == 0 ]; then echo "RKE est bien installé"; else tee >> log.txt; exit; fi
 }
 
 #############
@@ -140,7 +143,7 @@ function install_minio() {
 
   # telecharger le minio-dev.yaml
   mkdir -p /etc/minio
-  curl -so /etc/minio/installMinio.yml curl https://raw.githubusercontent.com/cifre0/backupK8s/main/minio/install.yml
+  curl -so /etc/minio/installMinio.yml https://raw.githubusercontent.com/cifre0/backupK8s/main/minio/install.yml
   var=$IP_INTERNAL yq e '.spec.externalIPs[0] = env(var)' -i /etc/minio/installMinio.yml
   var=$IP_INTERNAL yq e '.status.ingress = env(var)' -i /etc/minio/installMinio.yml
 
@@ -295,6 +298,7 @@ function add_key_pub(){
 }
 
 function backup_BDD() {
+  CMD_SSH=$( ssh -o "StrictHostKeyChecking=no" $USER_PROD_CBOX@$IP_PROD_CBOX sudo -i )
   check_if_key
   add_key_pub
   PASS_PSQL_PROD_CBOX=$( $CMD_SSH kubectl get secret -n $BDD_WORKSPACE_PROD_CBOX bdd-postgresql -o yaml | yq e '.data.postgres-password' | base64 -d )
