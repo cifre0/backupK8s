@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-svc
+  namespace: minio-dev
+  labels:
+    app.kebernetes.io/name: minio
+    app: minio
+    name: minio
+    namespace: minio-dev
+spec:
+  type: ClusterIP
+  selector:
+    app: minio
+  ports:
+    - name: port9000
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: consoleweb
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+  externalIPs:
+    - IP_NODE
