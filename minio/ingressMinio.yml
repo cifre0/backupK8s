@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-minio
+  namespace: minio-dev
+  annotations:
+spec:
+  rules:
+  - host: minio.backup.training
+    http:
+      paths:
+      - path:
+        backend:
+          service:
+            name: minio-svc
+            port:
+              number: 9000
+        path: /
+        pathType: Prefix
+  - host: console.backup.training
+    http:
+      paths:
+      - path:
+        backend:
+          service:
+            name: minio-svc
+            port:
+              number: 9090
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer:
+    ingress:
+    - ip: IP_NODE
