@@ -39,3 +39,6 @@ srv-backup:
     BDD:
       TABLE_PROD_CBOX: ""
       USERNAME_PROD_CBOX: ""
+    RESTORE:
+      NEW_S3: ""
+      NEW_BDD: ""
