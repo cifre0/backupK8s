@@ -10,7 +10,7 @@ srv-backup:
   MINIO:
     FQDN_CONSOLE: "console.backup.training"
     FQDN_MINIO_BACKUP: "minio.backup.training"
-    LOCAL_VOLUME: "/data
+    LOCAL_VOLUME: "/data"
   RCLONE:
     PROD:
       S3_PROD_ALIAS_NAME: "bucket_box"
