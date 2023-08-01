@@ -5,10 +5,12 @@ srv-backup:
     DISK_MOUNTED_FOR_MINIO: "/dev/sd*"
     IP_PROD_CBOX: "192.168.0.4"
     USER_PROD_CBOX: "ubuntu"
-    
   RKE2:
-    FQDN: "tes.example.backup"
-    
+    FQDN: "test.example.backup"
+  MINIO:
+    FQDN_CONSOLE: "console.backup.training"
+    FQDN_MINIO_BACKUP: "minio.backup.training"
+    FILE: "/data
   RCLONE:
     PROD:
       S3_PROD_ALIAS_NAME: "bucket_box"
