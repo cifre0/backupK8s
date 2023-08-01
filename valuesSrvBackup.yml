@@ -10,7 +10,7 @@ srv-backup:
   MINIO:
     FQDN_CONSOLE: "console.backup.training"
     FQDN_MINIO_BACKUP: "minio.backup.training"
-    FILE: "/data
+    LOCAL_VOLUME: "/data
   RCLONE:
     PROD:
       S3_PROD_ALIAS_NAME: "bucket_box"
@@ -31,7 +31,7 @@ srv-backup:
       S3_BACK_PORT_ENDPOINT: "9000"
     SYNC:
       S3_PROD_ALIAS_NAME: ""
-      S3_PROD_BUCKET_NAME: ""
+      S3_PROD_BUCKET_NAME: "" # kubectl get cm ceph-retain-bucket -o jsonpath='{.data.BUCKET_NAME}'
       S3_BACK_ALIAS_NAME: ""
       S3_BACK_BUCKET_NAME_OBJ: ""
       S3_BACK_BUCKET_BDD: ""
