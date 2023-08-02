@@ -11,13 +11,15 @@ srv-backup:
     FQDN_CONSOLE: "console.backup.training"
     FQDN_MINIO_BACKUP: "minio.backup.training"
     LOCAL_VOLUME: "/data"
+    TIME_DELAY_RETENTION: "1d"
   RCLONE:
     PROD:
       S3_PROD_ALIAS_NAME: "bucket_box"
       S3_PROD_PROVIDER: "Ceph"
       S3_PROD_ACCESS_KEY: ""
       S3_PROD_SECRET_KEY: ""
-      S3_PROD_ENDPOINT: "IP_PROD_CBOX"
+      S3_PROD_ENDPOINT: "IP_PROD_CBOX"  # syntaxe start with http://<FQDN/IP> or https://<FQDN/IP>
+      S3_PROD_PORT_ENDPOINT: "9000"
       S3_PROD_ACL: "private"
     BACKUP:
       S3_BACK_ALIAS_NAME: "bucket_objet"
@@ -26,7 +28,7 @@ srv-backup:
       S3_BACK_SECRET_KEY: ""
       S3_BACK_REGION: "other-v2-signature"
       S3_BACK_ACL: "bucket-owner-full-control"
-      S3_BACK_ENDPOINT: "IP_INTERNAL"
+      S3_BACK_ENDPOINT: "IP_INTERNAL" # syntaxe start with http://<FQDN/IP> or https://<FQDN/IP>
       S3_BACK_PORT_ENDPOINT: "9000"
     SYNC:
       S3_PROD_ALIAS_NAME: ""
