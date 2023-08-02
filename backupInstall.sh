@@ -42,6 +42,7 @@ function maj_values() {
     FQDN_CONSOLE=$( yq e '.srv-backup.MINIO.FQDN_CONSOLE' /etc/backup-cbox/valuesSrvBackup.yml )
     FQDN_MINIO_BACKUP=$( yq e '.srv-backup.MINIO.FQDN_MINIO_BACKUP' /etc/backup-cbox/valuesSrvBackup.yml )
     LOCAL_VOLUME_MINIO=$( yq e '.srv-backup.MINIO.LOCAL_VOLUME' /etc/backup-cbox/valuesSrvBackup.yml )
+    TIME_DELAY_RETENTION=$( yq e '.srv-backup.MINIO.TIME_DELAY_RETENTION' /etc/backup-cbox/valuesSrvBackup.yml )
     S3_PROD_ALIAS_NAME=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ALIAS_NAME' /etc/backup-cbox/valuesSrvBackup.yml )
     S3_PROD_PROVIDER=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_PROVIDER' /etc/backup-cbox/valuesSrvBackup.yml )
     S3_PROD_ACCESS_KEY=$( yq e '.srv-backup.RCLONE.PROD.S3_PROD_ACCESS_KEY' /etc/backup-cbox/valuesSrvBackup.yml )
@@ -67,7 +68,7 @@ function maj_values() {
     BDD_TABLE_PROD_CBOX=$( yq e '.srv-backup.K8S.BDD.TABLE_PROD_CBOX' /etc/backup-cbox/valuesSrvBackup.yml )
     BDD_USERNAME_PROD_CBOX=$( yq e '.srv-backup.K8S.BDD.USERNAME_PROD_CBOX' /etc/backup-cbox/valuesSrvBackup.yml )
 
-    echo "fin de la mise à jour des variables"
+    gestion_erreur "Mise à jour des variables"
   else
     install_dependance
     maj_values
@@ -100,51 +101,65 @@ function install_kubectl() {
   test_command kubectl 
   if [[ $? != 3 ]]
     then
-    # install kubectl
-    curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl &> /dev/null
-    chmod +x ./kubectl 
-    mv ./kubectl /usr/local/bin/kubectl
-    kubectl version --client &> /dev/null
-    gestion_erreur "kubectl"
-    ### auto-completion
-    source /usr/share/bash-completion/bash_completion
-    echo 'source <(kubectl completion bash)' >>~/.bashrc
-    kubectl completion bash >/etc/bash_completion.d/kubectl
-    echo 'alias k=kubectl' >>~/.bashrc
-    echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
-    ### tcheck if kubectl is up
-    gestion_erreur "auto-completion kubectl"
+      # install kubectl
+      curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl &> /dev/null
+      chmod +x ./kubectl 
+      mv ./kubectl /usr/local/bin/kubectl
+      kubectl version --client &> /dev/null
+      gestion_erreur "kubectl"
   fi
+      ### auto-completion
+      # tet if auto-completion
+      test_completion=$(complete -p | grep kubectl)
+      resultat_if_test_ok="complete -o default -F __start_kubectl kubectl complete -o default -F __start_kubectl k"
+    if [[ $test_completion != $resultat_if_test_ok ]]
+      then
+        source /usr/share/bash-completion/bash_completion
+        echo 'source <(kubectl completion bash)' >>~/.bashrc
+        kubectl completion bash >/etc/bash_completion.d/kubectl
+        echo 'alias k=kubectl' >>~/.bashrc
+        echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+  fi
+  gestion_erreur "auto-completion kubectl"
 }
 
 function install_rke() {
   test_command rke
-  # $IP_PUB $IP_INTERNAL $FQDN
-  mkdir -p /etc/rancher/rke2
-  curl -so /etc/rancher/rke2/config.yml https://raw.githubusercontent.com/cifre0/backupK8s/main/rkeMonoNode/config.yml
-  #echo  /etc/rancher/rke2/config.yml
-  var=$FQDN yq e '.tls-san[0] = env(var)' -i /etc/rancher/rke2/config.yml
-  var=$IP_INTERNAL yq e '.node-ip = env(var)' -i /etc/rancher/rke2/config.yml
-  var=$IP_INTERNAL yq e '.advertise-address = env(var)' -i /etc/rancher/rke2/config.yml
-  var=$IP_EXTERNAL yq e '.node-external-ip = env(var)' -i /etc/rancher/rke2/config.yml
+    if [[ $? != 3 ]]
+      then
+        # $IP_PUB $IP_INTERNAL $FQDN
+        if [ ! -f "/etc/rancher/rke2/config.yml" ]
+          then
+            mkdir -p /etc/rancher/rke2
+            curl -so /etc/rancher/rke2/config.yml https://raw.githubusercontent.com/cifre0/backupK8s/main/rkeMonoNode/config.yml &> /dev/null
 
-  curl -sfL https://get.rke2.io | sh -
-  systemctl enable rke2-server.service
-  systemctl start rke2-server.service
-  mkdir .kube
-  cp /etc/rancher/rke2/rke2.yaml .kube/config
-  if [ $(systemctl is-active rke2-server.service) == "active" ];
-  then 
-        echo "Service RKE is run" ; 
-  else
-        echo "debug service with journalctl -u rke2-server -f"; 
-        exit; 
-  fi
-  ### debug service: journalctl -u rke2-server -f
+            #echo  /etc/rancher/rke2/config.yml
+            var=$FQDN yq e '.tls-san[0] = env(var)' -i /etc/rancher/rke2/config.yml
+            var=$IP_INTERNAL yq e '.node-ip = env(var)' -i /etc/rancher/rke2/config.yml
+            var=$IP_INTERNAL yq e '.advertise-address = env(var)' -i /etc/rancher/rke2/config.yml
+            var=$IP_EXTERNAL yq e '.node-external-ip = env(var)' -i /etc/rancher/rke2/config.yml
+        else
+          echo "le fichier /etc/rancher/rke2/config.yml existe deja"
+        fi
 
-  ### verifie que le noeud K8s exist
-  kubectl get nodes 
-  if [ $? == 0 ]; then echo "RKE est bien installé"; else tee >> log.txt; exit; fi
+        curl -sfL https://get.rke2.io | sh - &> /dev/null
+        systemctl enable rke2-server.service &> /dev/null
+        systemctl start rke2-server.service &> /dev/null
+        mkdir -p .kube
+        cp /etc/rancher/rke2/rke2.yaml .kube/config
+        if [ $(systemctl is-active rke2-server.service) == "active" ];
+        then 
+              echo "Service RKE is run" ; 
+        else
+              echo "debug service with journalctl -u rke2-server -f"; 
+              exit; 
+        fi
+    fi
+        ### debug service: journalctl -u rke2-server -f
+
+        ### verifie que le noeud K8s exist
+        kubectl get nodes 
+        if [ $? == 0 ]; then echo "RKE est bien installé"; else tee >> log.txt; exit; fi
 }
 
 #############
@@ -161,9 +176,8 @@ function install_client_mc() {
         -o $HOME/minio-binaries/mc
 
       chmod +x $HOME/minio-binaries/mc
-      export PATH=$PATH:$HOME/minio-binaries/
-
-      echo "export PATH=$PATH:$HOME/minio-binaries" >> ~/.bashrc
+      export PATH=$PATH:$HOME/minio-binaries
+      echo "export PATH=$PATH:$HOME/minio-binaries" >>~/.bashrc
       source .bashrc
   fi
 }
@@ -180,7 +194,7 @@ function install_minio() {
   # telecharger le minio-dev.yaml
   mkdir -p /etc/minio
   for i in $FILE_MINIO; do curl -so /etc/minio/$i https://raw.githubusercontent.com/cifre0/backupK8s/main/minio/$i; done
-  var=$IP_INTERNAL yq e '.spec.externalIPs[0] = env(var)' -i /etc/minio/serviceMinio.yml
+  var=$IP_INTERNAL yq e ''.spec.externalIPs[0]' = env(var)' -i /etc/minio/serviceMinio.yml
   var=$IP_INTERNAL yq e ''.status.loadBalancer.ingress[].ip' = env(var)' -i /etc/minio/ingressMinio.yml
   # modife FQDN ingress
   var=$FQDN_MINIO_BACKUP yq e ''.spec.rules[0].host' = env(var)' -i /etc/minio/ingressMinio.yml
@@ -191,7 +205,7 @@ function install_minio() {
   #yq e '.spec.nodeSelector."kubernetes.io/hostname"'
 
   # folder de montage
-  mkdir -p /mnt/DataStore
+  mkdir -p $LOCAL_VOLUME_MINIO
   lsblk -o NAME,UUID,MOUNTPOINT -l
   # delete partition
   # for i in {1..4};do dd if=/dev/zero of=/dev/nvme"$i"n1 bs=1M count=1; done
@@ -199,11 +213,14 @@ function install_minio() {
   for i in $DISK_MOUNTED_FOR_MINIO; 
   do 
   # creer un file systeme
-  if [[ $(sudo file -s $i | awk ' { print $2 } ') = "data" ]]
+  if [[ $( file -s $i | awk ' { print $2 } ') = "data" ]]
   then
     # create filesystem ext4
     mkfs.ext4 -b 4096 $i
-
+  fi
+  
+  if [[ $( lsblk -o MOUNTPOINT -r -n $i ) != "$LOCAL_VOLUME_MINIO" ]]
+  then
     # monter le(s) disk
     mount $i $LOCAL_VOLUME_MINIO
   fi
@@ -257,13 +274,13 @@ mc rb alias/bucketName
 # delete file to bucket
 mc rm alias/bucketName
 """
-# afaire: mettre variable $TIME_DELAY_RETENTION pour le temp de rentetion
+
 function create_bucket_minio() {
   ###Creer 2 buckets BDD et S3(objectStorage)
   mc mb $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_BDD
 
   mc mb --with-versioning --with-lock $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_NAME_OBJ #versionning, et objectloking
-  mc retention set --default GOVERNANCE "1d" $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_NAME_OBJ # delais de retention
+  mc retention set --default GOVERNANCE \"$TIME_DELAY_RETENTION\" $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_NAME_OBJ # delais de retention
   mc ls $S3_BACK_ALIAS_NAME
 }
 
@@ -271,27 +288,51 @@ function create_bucket_minio() {
 ## rclone ###
 #############
 function install_rclone() {
-
   test_command rclone
-  # install rclone
-  mkdir -p /etc/rclone
-  curl https://rclone.org/install.sh -s | bash
+  if [[ $? != 3 ]]
+    then
+      # install rclone
+      mkdir -p /etc/rclone
+      curl https://rclone.org/install.sh -s | bash &>/dev/null
+  fi
 }
 """
 # rclone cmd
 rclone config
 .config/rclone/rclone.conf
-# corp du fichier rclone.conf
-"""
 
-function create_alias_rclone() {
-  ### PROD CBOX: $S3_PROD_ALIAS_NAME $S3_PROD_PROVIDER $S3_PROD_ACCESS_KEY $S3_PROD_SECRET_KEY $S3_PROD_ENDPOINT $S3_PROD_ACL $S3_PROD_BUCKET_NAME
-  ### BACKUP: $S3_BACK_ALIAS_NAME $S3_BACK_PROVIDER $S3_BACK_ACCESS_KEY $S3_BACK_SECRET_KEY $S3_BACK_REGION $S3_BACK_ACL $S3_BACK_ENDPOINT $S3_BACK_PORT_ENDPOINT $S3_BACK_BUCKET_NAME_OBJ
-  ### create alias PROD and BACKUP
-  rclone config create $S3_PROD_ALIAS_NAME s3 provider=$S3_PROD_PROVIDER access_key_id=$S3_PROD_ACCESS_KEY secret_access_key=$S3_PROD_SECRET_KEY endpoint=http://$S3_PROD_ENDPOINT:$S3_PROD_PORT_ENDPOINT acl=$S3_PROD_ACL
-  rclone config create $S3_BACK_ALIAS_NAME s3 provider=$S3_BACK_PROVIDER access_key_id=$S3_BACK_ACCESS_KEY secret_access_key=$S3_BACK_SECRET_KEY region=$S3_BACK_REGION acl=$S3_BACK_ACL endpoint=http://$S3_BACK_ENDPOINT:$S3_BACK_PORT_ENDPOINT
-}
-"""
+# corp du fichier rclone.conf
+https://rclone.org/s3/
+
+[squeletteAWS]
+type = s3
+provider = AWS
+env_auth = false
+access_key_id = XXX
+secret_access_key = YYY
+region = eu-west-3
+location_constraint = eu-west-3
+acl = private
+storage_class = STANDARD
+bucket_acl = public-read-write
+
+[squeletteCeph]
+type = s3
+provider = Ceph
+access_key_id = 
+secret_access_key = 
+endpoint = https://s3.rpi.ercom.training
+acl = private
+
+[squeletteMinio]
+type = s3
+provider = Minio
+access_key_id = minioadmin
+secret_access_key = minioadmin
+region = other-v2-signature
+acl = bucket-owner-full-control
+endpoint = http://172.19.130.178:9000
+
 cat <<EOF > .config/rclone/rclone.conf
 [$S3_PROD_ALIAS_NAME]
 type = s3
@@ -311,6 +352,20 @@ acl = $S3_BACK_ACL #default: bucket-owner-full-control
 endpoint = http://$S3_BACK_ENDPOINT:$S3_BACK_PORT_ENDPOINT # default port 9000
 EOF
 """
+
+function create_alias_rclone() {
+  ### PROD CBOX: $S3_PROD_ALIAS_NAME $S3_PROD_PROVIDER $S3_PROD_ACCESS_KEY $S3_PROD_SECRET_KEY $S3_PROD_ENDPOINT $S3_PROD_ACL $S3_PROD_BUCKET_NAME
+  ### BACKUP: $S3_BACK_ALIAS_NAME $S3_BACK_PROVIDER $S3_BACK_ACCESS_KEY $S3_BACK_SECRET_KEY $S3_BACK_REGION $S3_BACK_ACL $S3_BACK_ENDPOINT $S3_BACK_PORT_ENDPOINT $S3_BACK_BUCKET_NAME_OBJ
+  ### create alias PROD and BACKUP
+  # if [[ "${S3_PROD_PROVIDER,,}" = "aws" ]]
+  if [[ $S3_BACK_PORT_ENDPOINT != 9000 ]]
+    then
+      rclone config create $S3_PROD_ALIAS_NAME s3 provider=$S3_PROD_PROVIDER access_key_id=$S3_PROD_ACCESS_KEY secret_access_key=$S3_PROD_SECRET_KEY endpoint=$S3_PROD_ENDPOINT:$S3_PROD_PORT_ENDPOINT acl=$S3_PROD_ACL
+    else
+      rclone config create $S3_PROD_ALIAS_NAME s3 provider=$S3_PROD_PROVIDER access_key_id=$S3_PROD_ACCESS_KEY secret_access_key=$S3_PROD_SECRET_KEY endpoint=$S3_PROD_ENDPOINT acl=$S3_PROD_ACL
+  fi
+  rclone config create $S3_BACK_ALIAS_NAME s3 provider=$S3_BACK_PROVIDER access_key_id=$S3_BACK_ACCESS_KEY secret_access_key=$S3_BACK_SECRET_KEY region=$S3_BACK_REGION acl=$S3_BACK_ACL endpoint=$S3_BACK_ENDPOINT:$S3_BACK_PORT_ENDPOINT
+}
 
 function backup_S3() {
   # cmd rclone pour synch
@@ -483,7 +538,8 @@ function edit_var() {
   echo "FQDN: $FQDN"     
   echo "FQDN_CONSOLE: $FQDN_CONSOLE"
   echo "FQDN_MINIO_BACKUP: $FQDN_MINIO_BACKUP"
-  echo "LOCAL_VOLUME_MINIO: $LOCAL_VOLUME_MINIO"  
+  echo "LOCAL_VOLUME_MINIO: $LOCAL_VOLUME_MINIO"
+  echo "TIME_DELAY_RETENTION: $TIME_DELAY_RETENTION"
   echo "S3_PROD_ALIAS_NAME: $S3_PROD_ALIAS_NAME"
   echo "S3_PROD_PROVIDER: $S3_PROD_PROVIDER"
   echo "S3_PROD_ACCESS_KEY: $S3_PROD_ACCESS_KEY"
@@ -523,23 +579,12 @@ function edit_var() {
 ########
 
 function main() {
-  # maj_values
-  # install_dependance
-  # install_kubectl
-  # install_rke
-  # install_client_mc
-  # install_minio
-  # create_alias_minio
-  # create_bucket_minio
-  # install_rclone
-  # create_alias_rclone
-  # backup_S3 # remote commande with ssh
-  # backup_BDD
-  # restore_S3 # in progress
-  # restore_BDD # in progress
   menu
 }
 
 main
 
-# modifier le fichier ingress pour mettre le bon url
+# modifier le fichier ingress pour mettre le bon url: FAIT
+# pour install create alias et bucket faire une verif si il existe alors exit la fonction: FAIT
+# profile pour chaque provider rclone aws ceph et minio
+# faire un cronjob
