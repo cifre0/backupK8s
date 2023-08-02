@@ -4,7 +4,7 @@ metadata:
   name: minio-svc
   namespace: minio-dev
   labels:
-    app.kebernetes.io/name: minio
+    app.kubernetes.io/name: minio
     app: minio
     name: minio
     namespace: minio-dev
