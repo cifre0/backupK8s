@@ -18,7 +18,6 @@ srv-backup:
       S3_PROD_ACCESS_KEY: ""
       S3_PROD_SECRET_KEY: ""
       S3_PROD_ENDPOINT: "IP_PROD_CBOX"
-      S3_PROD_PORT_ENDPOINT: "9000"
       S3_PROD_ACL: "private"
     BACKUP:
       S3_BACK_ALIAS_NAME: "bucket_objet"
