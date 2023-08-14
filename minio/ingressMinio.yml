@@ -4,6 +4,8 @@ metadata:
   name: ingress-minio
   namespace: minio-dev
   annotations:
+    # add an annotation indicating the issuer to use.
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
   - host: minio.backup.training
@@ -28,6 +30,10 @@ spec:
               number: 9090
         path: /
         pathType: Prefix
+  tls:
+  - hosts:
+    - minio.backup.training
+    secretName: cert-minios3
 status:
   loadBalancer:
     ingress:
