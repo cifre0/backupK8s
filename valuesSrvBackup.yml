@@ -1,9 +1,9 @@
 srv-backup:
   SYSTEM:
-    IP_INTERNAL: "192.168.0.5"
-    IP_EXTERNAL: "EXTERNAL_IP"
-    DISK_MOUNTED_FOR_MINIO: "/dev/sd*"
-    IP_PROD_CBOX: "192.168.0.4"
+    IP_INTERNAL: "192.168.0.5"                                                                            # ip -c -4 a 
+    IP_EXTERNAL: "EXTERNAL_IP"                                                                            # curl --silent ipinfo.io | yq e .ip
+    DISK_MOUNTED_FOR_MINIO: "/dev/sd*"                                                                    # lsblk
+    IP_PROD_CBOX: "192.168.0.4"                                                                           
     USER_PROD_CBOX: "ubuntu"
   RKE2:
     FQDN: "test.example.backup"
@@ -18,7 +18,7 @@ srv-backup:
       S3_PROD_PROVIDER: "Ceph"
       S3_PROD_ACCESS_KEY: ""
       S3_PROD_SECRET_KEY: ""
-      S3_PROD_ENDPOINT: "IP_PROD_CBOX"  # syntaxe start with http://<FQDN/IP> or https://<FQDN/IP>
+      S3_PROD_ENDPOINT: "IP_PROD_CBOX"  # syntaxe start with http://<FQDN/IP> or https://<FQDN/IP>                    
       S3_PROD_PORT_ENDPOINT: "9000"
       S3_PROD_ACL: "private"
     BACKUP:
