@@ -453,12 +453,23 @@ function backup_BDD() {
   """
 }
 
+function backup_s3(){
+  """
+   rclone copy -P minio:obj backuptest:ceph-bkt-cc10312f-8203-49ed-93ee-691sfsdfdvsdf
+  """
+}
+
 function restore_S3() {
   echo "In Progress"
+
 }
 
 function restore_BDD() {
   echo "In Progress"
+  """
+  ssh -o \"StrictHostKeyChecking=no\" root@17.26.30.160 sudo -i PGPASSWORD=z6LGFMMqqO psql -U postgres -d postgres -h 10.43.67.110 < $(mc cat myminio/bdd/allDATACbox.sql)
+  mc cat myminio/bdd/allDATACbox.sql > ssh -o \"StrictHostKeyChecking=no\" root@17.26.30.160 sudo -i PGPASSWORD=z6LGFMMqqO psql -U postgres -d postgres -h 10.43.67.110
+  """
 }
 
 ##
