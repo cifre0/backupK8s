@@ -373,10 +373,7 @@ function backup_S3() {
   # cmd rclone pour synch
   # rclone sync source:path dest:path [flags]
   rclone sync -P $S3_PROD_ALIAS_NAME:$S3_PROD_BUCKET_NAME $S3_BACK_ALIAS_NAME:$S3_BACK_BUCKET_NAME_OBJ
-  """
-  Example:
-   rclone copy -P minio:obj backuptest:ceph-bkt-cc10312f-8203-49ed-93ee-691sfsdfdvsdf
-  """
+
 }
 
 function check_if_key(){
@@ -461,6 +458,10 @@ function backup_BDD() {
 
 function restore_S3() {
   echo "In Progress"
+  """
+  Example:
+   rclone copy -P minio:obj backuptest:ceph-bkt-cc10312f-8203-49ed-93ee-691sfsdfdvsdf
+  """
 
 }
 
