@@ -373,6 +373,10 @@ function backup_S3() {
   # cmd rclone pour synch
   # rclone sync source:path dest:path [flags]
   rclone sync -P $S3_PROD_ALIAS_NAME:$S3_PROD_BUCKET_NAME $S3_BACK_ALIAS_NAME:$S3_BACK_BUCKET_NAME_OBJ
+  """
+  Example:
+   rclone copy -P minio:obj backuptest:ceph-bkt-cc10312f-8203-49ed-93ee-691sfsdfdvsdf
+  """
 }
 
 function check_if_key(){
@@ -452,12 +456,6 @@ function backup_BDD() {
    mc cp ./allDataCbox.sql backup/bdd/
   # copie dump directly to bucket
    kubectl exec -it -n psql bdd-postgresql-0 -- bash -c "PGPASSWORD=z6dgFMMjqO pg_dumpall -U postgres" 2>dump_error.log | mc pipe backup/bdd/allDATACbox.sql
-  """
-}
-
-function backup_s3(){
-  """
-   rclone copy -P minio:obj backuptest:ceph-bkt-cc10312f-8203-49ed-93ee-691sfsdfdvsdf
   """
 }
 
