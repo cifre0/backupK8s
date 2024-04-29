@@ -445,11 +445,11 @@ function backup_BDD() {
   # mdp container
    kubectl get secret -n psql bdd-postgresql -o yaml | yq e '.data.postgres-password' | base64 -d
   # pgdumpall BDD
-   kubectl exec -it -n psql bdd-postgresql-0 -- bash -c "PGPASSWORD=z6LGFMMqqO pg_dumpall -U postgres" > allDataCbox.sql
+   kubectl exec -it -n psql bdd-postgresql-0 -- bash -c "PGPASSWORD=z6dgFMMqqO pg_dumpall -U postgres" > allDataCbox.sql
   # copi file to bucket
    mc cp ./allDataCbox.sql backup/bdd/
   # copie dump directly to bucket
-   kubectl exec -it -n psql bdd-postgresql-0 -- bash -c "PGPASSWORD=z6LGFMMqqO pg_dumpall -U postgres" 2>dump_error.log | mc pipe backup/bdd/allDATACbox.sql
+   kubectl exec -it -n psql bdd-postgresql-0 -- bash -c "PGPASSWORD=z6dgFMMjqO pg_dumpall -U postgres" 2>dump_error.log | mc pipe backup/bdd/allDATACbox.sql
   """
 }
 
@@ -467,8 +467,8 @@ function restore_S3() {
 function restore_BDD() {
   echo "In Progress"
   """
-  ssh -o \"StrictHostKeyChecking=no\" root@17.26.30.160 sudo -i PGPASSWORD=z6LGFMMqqO psql -U postgres -d postgres -h 10.43.67.110 < $(mc cat myminio/bdd/allDATACbox.sql)
-  mc cat myminio/bdd/allDATACbox.sql > ssh -o \"StrictHostKeyChecking=no\" root@17.26.30.160 sudo -i PGPASSWORD=z6LGFMMqqO psql -U postgres -d postgres -h 10.43.67.110
+  ssh -o \"StrictHostKeyChecking=no\" root@17.26.30.160 sudo -i PGPASSWORD=z6dgFMMjqO psql -U postgres -d postgres -h 10.43.67.110 < $(mc cat myminio/bdd/allDATACbox.sql)
+  mc cat myminio/bdd/allDATACbox.sql > ssh -o \"StrictHostKeyChecking=no\" root@17.26.30.160 sudo -i PGPASSWORD=z6dgFMMjqO psql -U postgres -d postgres -h 10.43.67.110
   """
 }
 
