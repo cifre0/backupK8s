@@ -278,9 +278,11 @@ mc rm alias/bucketName
 function create_bucket_minio() {
   ###Creer 2 buckets BDD et S3(objectStorage)
   mc mb $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_BDD
+  mc version enable $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_BDD
 
   mc mb --with-versioning --with-lock $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_NAME_OBJ #versionning, et objectloking
   mc retention set --default GOVERNANCE \"$TIME_DELAY_RETENTION\" $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_NAME_OBJ # delais de retention
+  mc version enable $S3_BACK_ALIAS_NAME/$S3_BACK_BUCKET_NAME_OBJ
   mc ls $S3_BACK_ALIAS_NAME
 }
 
