@@ -234,8 +234,12 @@ function install_minio() {
   then 
     echo "$UUID_DISK_MOUNTED est deja present sur le fichier /etc/fstab";
   else 
-    ### mettre le montage dans /etc/fstab;
-    echo "UUID=$UUID_DISK_MOUNTED /mnt/DataStore    ext4    rw,relatime   0   0" >> /etc/fstab ; 
+    ### if line not presente in file, then ...
+    if [[ -z $(cat /etc/fstab | grep "UUID=$UUID_DISK_MOUNTED /mnt/DataStore    ext4    rw,relatime   0   0") ]]
+    then
+      ### mettre le montage dans /etc/fstab;
+      echo "UUID=$UUID_DISK_MOUNTED /mnt/DataStore    ext4    rw,relatime   0   0" >> /etc/fstab ; 
+    fi
   fi
   done
   
